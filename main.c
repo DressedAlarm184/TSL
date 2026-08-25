@@ -3,13 +3,15 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <stdint.h>
 #include <ctype.h>
 
-void putch(unsigned char ch) {
-	if (ch == '\n' || ch == '\t' || ch == '\r') {
-		addch(ch);
-	} else if (!iscntrl(ch)) {
-		addch(ch);
+void putch(uint16_t ch) {
+	unsigned char c = (unsigned char)(ch & 0xFF);
+	if (c == '\n' || c == '\t' || c == '\r') {
+		addch(c);
+	} else if (!iscntrl(c)) {
+		addch(c);
 	}
 }
 
@@ -35,11 +37,10 @@ void populate_program_layout(int* ip, int functions[], unsigned char* program) {
 
 void run_tsl_code(unsigned char* program) {
 	int ip = 0, tp = 0, sp = 0, lp = 0, ap = 0, cp = 0;
-	unsigned char user_stack[1024] = {0}, tape[8192] = {0};
+	uint16_t user_stack[1024] = {0}, tape[8192] = {0}, variables[26] = {0};
 	int loop_stack[64] = {0}, addr_stack[256] = {0};
 	int functions[100] = {0}, call_stack[128] = {0};
 	unsigned int iterations = 0;
-	unsigned char variables[26] = {0};
 
 	populate_program_layout(&ip, functions, program);
 
@@ -58,7 +59,7 @@ void run_tsl_code(unsigned char* program) {
 			case '^': tape[tp] += user_stack[sp--]; break;
 			case '~': tape[tp] -= user_stack[sp--]; break;
 			case '#': tape[tp] = getch(); break;
-			case '?': tape[tp] = rand() % (tape[tp] ? (tape[tp]+1) : 256); break;
+			case '?': tape[tp] = rand() % (tape[tp] ? tape[tp] + 1 : 65536); break;
 			case '{': {
 				ip++;
 				unsigned short start_addr = ip;
@@ -72,19 +73,25 @@ void run_tsl_code(unsigned char* program) {
 				char number_buffer[8] = {0}; int buf_idx = 0; char mode = '=';
 				if (program[ip] == '+' || program[ip] == '-') mode = program[ip++];
 				while (program[ip] != ']') number_buffer[buf_idx++] = program[ip++];
-				int val = strtol(number_buffer, NULL, 0);
+				uint16_t val = (uint16_t)strtol(number_buffer, NULL, 0);
 				if (mode == '+') {
 					tape[tp] += val;
 				} else if (mode == '-') {
 					tape[tp] -= val;
-				} else tape[tp] = (unsigned char)val;
+				} else tape[tp] = val;
 				break;
 			}
 			case 'G': {
+				uint16_t max_len = user_stack[sp--];
+				char* temp_buf = malloc(max_len + 1);
 				echo();
-				getnstr((char*)&tape[tp], user_stack[sp--]);
+				getnstr(temp_buf, max_len);
 				noecho();
-				while (tape[tp] != 0) tp++;
+				for (int i = 0; temp_buf[i] != '\0';) {
+					tape[tp++] = (unsigned char)temp_buf[i++];
+				}
+				tape[tp] = 0;
+				free(temp_buf);
 				break;
 			}
 			case '"':
@@ -92,6 +99,7 @@ void run_tsl_code(unsigned char* program) {
 				for (; program[ip] != '"'; ip++, tp++) {
 					tape[tp] = program[ip];
 				}
+				tape[tp] = 0;
 				break;
 			case '(':
 				if (tape[tp] == 0) {
@@ -110,19 +118,19 @@ void run_tsl_code(unsigned char* program) {
 				} else if (lp > 0) lp--;
 				break;
 			case 'X': {
-				unsigned char temp = user_stack[sp];
+				uint16_t temp = user_stack[sp];
 				user_stack[sp] = tape[tp];
 				tape[tp] = temp;
 				break;
 			}
-			case 'K': usleep(tape[tp] * 10000); break;
+			case 'K': usleep(tape[tp] * 1000); break;
 			case '=': tape[tp] = (user_stack[sp--] == tape[tp]) ? 1 : 0; break;
 			case '*': tape[tp] = (user_stack[sp--] != tape[tp]) ? 1 : 0; break;
 			case 'B': tape[tp] = (user_stack[sp--] > tape[tp]) ? 1 : 0; break;
 			case 'S': tape[tp] = (user_stack[sp--] < tape[tp]) ? 1 : 0; break;
 			case '\'':
 				ip++;
-				while (program[ip] != '\'')	putch(program[ip++]);
+				while (program[ip] != '\'') putch(program[ip++]);
 				break;
 			case 'M': tape[tp] *= user_stack[sp--]; break;
 			case '/': tape[tp] /= user_stack[sp--]; break;
@@ -147,12 +155,12 @@ void run_tsl_code(unsigned char* program) {
 				break;
 			}
 			case 'I': {
-				int parsed_value = 0;
+				uint32_t parsed_value = 0;
 				while (tape[tp] >= '0' && tape[tp] <= '9') {
 					parsed_value = (parsed_value * 10) + (tape[tp] - '0');
 					tp++;
 				}
-				user_stack[++sp] = (unsigned char)(parsed_value & 0xFF);
+				user_stack[++sp] = (uint16_t)(parsed_value & 0xFFFF);
 				break;
 			}
 			case 'Q': ip = call_stack[--cp]; break;
@@ -204,11 +212,12 @@ int main(int argc, char* argv[]) {
 	initscr(), cbreak(), noecho();
 	keypad(stdscr, TRUE), scrollok(stdscr, TRUE);
 
-	run_tsl_code(program);
+	run_tsl_code((unsigned char*)program);
 
 	printw("\n\nTSL program has ended. Press any key to exit...");
 	getch();
 
 	endwin();
 	free(program);
+	return 0;
 }
