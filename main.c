@@ -64,7 +64,10 @@ void run_tsl_code(unsigned char* program) {
 				ip++;
 				unsigned short start_addr = ip;
 				char nb[8] = {0};
-				while (program[ip] != '}') nb[ip - start_addr] = program[ip++];
+				while (program[ip] != '}') {
+					nb[ip - start_addr] = program[ip];
+					ip++;
+				}
 				tp = strtol(nb, NULL, 0);
 				break;
 			}
