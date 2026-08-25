@@ -13,6 +13,26 @@ void putch(unsigned char ch) {
 	}
 }
 
+void populate_program_layout(int* ip, int functions[], unsigned char* program) {
+	char in_string = 0;
+
+	for (int i = 0, c = 0; program[i] != 0; i++) {
+		char ch = program[i];
+
+		if (in_string == 0) {
+			if (ch == '\'' || ch == '"') {
+				in_string = ch;
+			} else if (ch == '@') {
+				functions[c++] = i;
+			} else if (ch == ':' && *ip == 0) {
+				*ip = i + 1;
+			}
+		} else {
+			if (ch == in_string) in_string = 0;
+		}
+	}
+}
+
 void run_tsl_code(unsigned char* program) {
 	int ip = 0, tp = 0, sp = 0, lp = 0, ap = 0, cp = 0;
 	unsigned char user_stack[1024] = {0}, tape[8192] = {0};
@@ -21,9 +41,7 @@ void run_tsl_code(unsigned char* program) {
 	unsigned int iterations = 0;
 	unsigned char variables[26] = {0};
 
-	for (int i = 0, c = 0; program[i] != 0; i++) {
-		if (program[i] == '@') functions[c++] = i;
-	}
+	populate_program_layout(&ip, functions, program);
 
 	while (program[ip] != '%' && program[ip] != 0) {
 		switch (program[ip]) {
@@ -146,16 +164,14 @@ void run_tsl_code(unsigned char* program) {
 				break;
 			}
 		}
+
 		ip++, iterations++;
 		if (iterations % 10000 == 0) usleep(1000);
 
 		nodelay(stdscr, TRUE);
 		int ch = getch();
 		nodelay(stdscr, FALSE);
-
-		if (ch == 24) {
-			goto end;
-		}
+		if (ch == 24) goto end;
 
 		refresh();
 	}
