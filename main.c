@@ -14,11 +14,17 @@ void putch(unsigned char ch) {
 }
 
 void run_tsl_code(unsigned char* program) {
-	int ip = 0, tp = 0, sp = 0, lp = 0, ap = 0;
+	int ip = 0, tp = 0, sp = 0, lp = 0, ap = 0, cp = 0;
 	unsigned char user_stack[1024] = {0}, tape[8192] = {0};
 	int loop_stack[64] = {0}, addr_stack[256] = {0};
+	int functions[100] = {0}, call_stack[128] = {0};
 	unsigned int iterations = 0;
 	unsigned char variables[26] = {0};
+
+	for (int i = 0, c = 0; program[i] != 0; i++) {
+		if (program[i] == '@') functions[c++] = i;
+	}
+
 	while (program[ip] != '%' && program[ip] != 0) {
 		switch (program[ip]) {
 			case '+': tape[tp]++; break;
@@ -96,7 +102,6 @@ void run_tsl_code(unsigned char* program) {
 			case '*': tape[tp] = (user_stack[sp--] != tape[tp]) ? 1 : 0; break;
 			case 'B': tape[tp] = (user_stack[sp--] > tape[tp]) ? 1 : 0; break;
 			case 'S': tape[tp] = (user_stack[sp--] < tape[tp]) ? 1 : 0; break;
-			case '%': goto end;
 			case '\'':
 				ip++;
 				while (program[ip] != '\'')	putch(program[ip++]);
@@ -132,6 +137,14 @@ void run_tsl_code(unsigned char* program) {
 				user_stack[++sp] = (unsigned char)(parsed_value & 0xFF);
 				break;
 			}
+			case 'Q': ip = call_stack[--cp]; break;
+			case 'F': {
+				int func_index = 0;
+				sscanf((char*)&program[ip + 1], "%2d", &func_index);
+				call_stack[cp++] = ip + 2;
+				ip = functions[func_index] - 1;
+				break;
+			}
 		}
 		ip++, iterations++;
 		if (iterations % 10000 == 0) usleep(1000);
@@ -149,7 +162,6 @@ void run_tsl_code(unsigned char* program) {
 
 	end:;
 }
-
 
 int main(int argc, char* argv[]) {
 	srand(time(NULL));
