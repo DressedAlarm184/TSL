@@ -181,6 +181,16 @@ void run_tsl_code(unsigned char* program) {
 				ip = functions[func_index] - 1;
 				break;
 			}
+			case 'E': {
+				lp--;
+				int loop_balance = 1;
+				while (loop_balance > 0) {
+					ip++;
+					if (program[ip] == '(') loop_balance++;
+					else if (program[ip] == ')') loop_balance--;
+				}
+				break;
+			}
 		}
 
 		ip++, iterations++;
