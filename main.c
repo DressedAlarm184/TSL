@@ -6,6 +6,32 @@
 #include <stdint.h>
 #include <ctype.h>
 
+int scan_block(const unsigned char* program, int ip, char open, char close, char alt, int* found_alt) {
+	int balance = 1;
+	char in_string = 0;
+	if (found_alt) *found_alt = 0;
+
+	while (balance > 0 && program[ip] != 0) {
+		ip++;
+		char ch = program[ip];
+
+		if (in_string == 0 && (ch == '\'' || ch == '"')) in_string = ch;
+		else if (in_string == ch) in_string = 0;
+
+		if (in_string == 0) {
+			if (ch == open) {
+				balance++;
+			} else if (ch == close) {
+				balance--;
+			} else if (alt != 0 && ch == alt && balance == 1) {
+				if (found_alt) *found_alt = 1;
+				break;
+			}
+		}
+	}
+	return ip;
+}
+
 void putch(uint16_t ch) {
 	unsigned char c = (unsigned char)(ch & 0xFF);
 	if (c == '\n' || c == '\t' || c == '\r') {
@@ -111,11 +137,7 @@ void run_tsl_code(unsigned char* program) {
 			}
 			case '(':
 				if (tape[tp] == 0) {
-					int loop_balance = 1;
-					while (loop_balance > 0) {
-						if (program[++ip] == '(') loop_balance++;
-						else if (program[ip] == ')') loop_balance--;
-					}
+					ip = scan_block(program, ip, '(', ')', 0, NULL);
 				} else {
 					loop_stack[lp++] = ip;
 				}
@@ -181,16 +203,10 @@ void run_tsl_code(unsigned char* program) {
 				ip = functions[func_index] - 1;
 				break;
 			}
-			case 'E': {
+			case 'E':
 				lp--;
-				int loop_balance = 1;
-				while (loop_balance > 0) {
-					ip++;
-					if (program[ip] == '(') loop_balance++;
-					else if (program[ip] == ')') loop_balance--;
-				}
+				ip = scan_block(program, ip, '(', ')', 0, NULL);
 				break;
-			}
 		}
 
 		ip++, iterations++;
