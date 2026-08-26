@@ -3,10 +3,10 @@ import sys
 import re
 
 SIMPLE_OPS = {
-	"inc": "+", "+": "+",
-	"dec": "-", "-": "-",
-	"right": ">", ">": ">",
-	"left": "<", "<": "<",
+	"inc": "+",
+	"dec": "-",
+	"right": ">",
+	"left": "<",
 
 	"push": "!",
 	"pop": "$",
@@ -38,11 +38,14 @@ SIMPLE_OPS = {
 	"entry": ":",
 	"return": "Q",
 	"ret": "Q",
-	"while": "(", "(": "(",
-	"endwhile": ")", ")": ")",
-	"end": "%", "%": "%",
+	"while": "w(",
+	"endblock": ")",
+	"end": "%",
 	"parseint": "I",
 	"break": "E",
+	"if": "i(",
+	"else": "|",
+	"function": "@",
 }
 
 def transpile_tsl(source: str) -> str:
@@ -74,8 +77,6 @@ def transpile_tsl(source: str) -> str:
 				
 			try:
 				match cmd:
-					case "fn":
-						output.append("@")
 					case "call":
 						func_idx = int(args[0])
 						output.append(f"F{func_idx:02d}")

@@ -6,6 +6,11 @@
 #include <stdint.h>
 #include <ctype.h>
 
+typedef struct {
+    int start;
+    int end;
+} Loop;
+
 int scan_block(const unsigned char* program, int ip, char open, char close, char alt, int* found_alt) {
 	int balance = 1;
 	char in_string = 0;
@@ -64,9 +69,8 @@ void populate_program_layout(int* ip, int functions[], unsigned char* program) {
 void run_tsl_code(unsigned char* program) {
 	int ip = 0, tp = 0, sp = 0, lp = 0, ap = 0, cp = 0;
 	uint16_t user_stack[1024] = {0}, tape[8192] = {0}, variables[26] = {0};
-	int loop_stack[64] = {0}, addr_stack[256] = {0};
-	int functions[100] = {0}, call_stack[128] = {0};
-	unsigned int iterations = 0;
+	int functions[100] = {0}, call_stack[128] = {0}, addr_stack[256] = {0};
+	unsigned int iterations = 0; Loop loop_stack[64] = {0};
 
 	populate_program_layout(&ip, functions, program);
 
@@ -135,17 +139,14 @@ void run_tsl_code(unsigned char* program) {
 				tp = start_tp;
 				break;
 			}
-			case '(':
-				if (tape[tp] == 0) {
-					ip = scan_block(program, ip, '(', ')', 0, NULL);
-				} else {
-					loop_stack[lp++] = ip;
-				}
-				break;
 			case ')':
-				if ((tape[tp] != 0) && (lp > 0)) {
-					ip = loop_stack[lp - 1];
-				} else if (lp > 0) lp--;
+				if (lp > 0 && ip == loop_stack[lp - 1].end) {
+					if (tape[tp] != 0) {
+						ip = loop_stack[lp - 1].start;
+					} else {
+						lp--;
+					}
+				}
 				break;
 			case 'X': {
 				uint16_t temp = user_stack[sp];
@@ -203,9 +204,27 @@ void run_tsl_code(unsigned char* program) {
 				ip = functions[func_index] - 1;
 				break;
 			}
-			case 'E':
-				lp--;
-				ip = scan_block(program, ip, '(', ')', 0, NULL);
+			case 'E': if (lp > 0) ip = loop_stack[--lp].end; break;
+			case 'i':
+				if (program[ip + 1] == '(') {
+					ip++;
+					if (tape[tp] == 0) {
+						int found_else = 0;
+						ip = scan_block(program, ip, '(', ')', '|', &found_else);
+					}
+				}
+				break;
+			case '|': ip = scan_block(program, ip, '(', ')', 0, NULL); break;
+			case 'w':
+				if (program[ip + 1] == '(') {
+					ip++;
+					int end_ip = scan_block(program, ip, '(', ')', 0, NULL);
+					if (tape[tp] == 0) {
+						ip = end_ip;
+					} else {
+						loop_stack[lp++] = (Loop){ .start = ip, .end = end_ip };
+					}
+				}
 				break;
 		}
 
