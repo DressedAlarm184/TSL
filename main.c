@@ -85,6 +85,7 @@ void run_tsl_code(unsigned char* program) {
 				break;
 			}
 			case 'G': {
+				int start_tp = tp;
 				uint16_t max_len = user_stack[sp--];
 				char* temp_buf = malloc(max_len + 1);
 				echo();
@@ -95,15 +96,19 @@ void run_tsl_code(unsigned char* program) {
 				}
 				tape[tp] = 0;
 				free(temp_buf);
+				tp = start_tp;
 				break;
 			}
-			case '"':
+			case '"': {
+				int start_tp = tp;
 				ip++;
 				for (; program[ip] != '"'; ip++, tp++) {
 					tape[tp] = program[ip];
 				}
 				tape[tp] = 0;
+				tp = start_tp;
 				break;
+			}
 			case '(':
 				if (tape[tp] == 0) {
 					int loop_balance = 1;
@@ -158,12 +163,14 @@ void run_tsl_code(unsigned char* program) {
 				break;
 			}
 			case 'I': {
+				int start_tp = tp;
 				uint32_t parsed_value = 0;
 				while (tape[tp] >= '0' && tape[tp] <= '9') {
 					parsed_value = (parsed_value * 10) + (tape[tp] - '0');
 					tp++;
 				}
 				user_stack[++sp] = (uint16_t)(parsed_value & 0xFFFF);
+				tp = start_tp;
 				break;
 			}
 			case 'Q': ip = call_stack[--cp]; break;
