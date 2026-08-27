@@ -16,10 +16,10 @@ SIMPLE_OPS = {
 	"popaddr": "&",
 	"dropaddr": "\\",
 
-	"addstack": "^",
-	"substack": "~",
-	"mulstack": "M",
-	"divstack": "/",
+	"stkadd": "^",
+	"stksub": "~",
+	"stkmul": "M",
+	"stkdiv": "/",
 	"shl": "L",
 	"shr": "R",
 	"eq": "=",
@@ -28,16 +28,14 @@ SIMPLE_OPS = {
 	"lt": "S",
 	"rand": "?",
 
-	"printchar": "P",
-	"printnumber": "N",
-	"readchar": "#",
+	"putchar": "P",
+	"printn": "N",
+	"getchar": "#",
 	"readline": "G",
 	"sleep": "K",
 
-	"main:": ":",
 	"entry": ":",
 	"return": "Q",
-	"ret": "Q",
 	"while": "w(",
 	"endblock": ")",
 	"end": "%",
@@ -89,7 +87,7 @@ def transpile_tsl(source: str) -> str:
 						output.append(f"[+{args[0]}]")
 					case "sub":
 						output.append(f"[-{args[0]}]")
-					case "jumptape":
+					case "jumpaddr":
 						output.append(f"{{{args[0]}}}")
 					case "store":
 						output.append(f".{args[0].upper()}")
