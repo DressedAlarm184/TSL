@@ -2,11 +2,11 @@ void run_tsl_code(unsigned char* program) {
 	int ip = 0, tp = 0, sp = 0, lp = 0, ap = 0, cp = 0;
 	uint16_t user_stack[1024] = {0}, tape[8192] = {0}, variables[26] = {0};
 	int functions[100] = {0}, call_stack[128] = {0}, addr_stack[256] = {0};
-	unsigned int iterations = 0; Loop loop_stack[64] = {0};
+	Loop loop_stack[64] = {0};
 
 	populate_program_layout(&ip, functions, program);
 
-	for (; program[ip] != '%' && program[ip] != 0; ip++, iterations++) switch (program[ip]) {
+	for (; program[ip] != '%' && program[ip] != 0; ip++) switch (program[ip]) {
 		case '+': tape[tp]++; break;
 		case '-': tape[tp]--; break;
 		case '>': tp++; break;
@@ -105,7 +105,11 @@ void run_tsl_code(unsigned char* program) {
 					default: putchar('?'); break;
 				} else if (program[ip] == '%') switch (program[++ip]) {
 					case '%': putchar('%'); break;
-					case 's': printf("%s", &tape[tp]); break;
+					case 's':
+						for (int temp_tp = tp; tape[temp_tp] != 0; temp_tp++) {
+							putchar((char)(tape[temp_tp] & 0xFF));
+						}
+						break;
 					case 'd': printf("%d", tape[tp]); break;
 					case 'c': printf("%c", tape[tp]); break;
 					default: putchar('?'); break;
