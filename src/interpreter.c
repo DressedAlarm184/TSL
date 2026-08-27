@@ -42,15 +42,20 @@ void run_tsl_code(unsigned char* program) {
 		}
 		case '[': {
 			ip++;
-			char number_buffer[8] = {0}; int buf_idx = 0; char mode = '=';
-			if (program[ip] == '+' || program[ip] == '-') mode = program[ip++];
-			while (program[ip] != ']') number_buffer[buf_idx++] = program[ip++];
+			char number_buffer[12] = {0}; int buf_idx = 0; char mode = '=';
+			if (program[ip] < '0' || program[ip] > '9') mode = program[ip++];
+			while (program[ip] != ']') {
+				number_buffer[buf_idx++] = program[ip++];
+			}
 			uint16_t val = (uint16_t)strtol(number_buffer, NULL, 0);
-			if (mode == '+') {
-				tape[tp] += val;
-			} else if (mode == '-') {
-				tape[tp] -= val;
-			} else tape[tp] = val;
+			switch (mode) {
+				case '=': tape[tp] = val;  break;
+				case '+': tape[tp] += val; break;
+				case '-': tape[tp] -= val; break;
+				case 'i': user_stack[++sp] = val; break;
+				case 'a': user_stack[sp] += val;  break;
+				case 's': user_stack[sp] -= val;  break;
+			}
 			break;
 		}
 		case 'G': {
@@ -92,7 +97,7 @@ void run_tsl_code(unsigned char* program) {
 		}
 		case 'K': usleep(tape[tp] * 1000); break;
 		case '=': tape[tp] = (user_stack[sp--] == tape[tp]) ? 1 : 0; break;
-		case '*': tape[tp] = (user_stack[sp--] != tape[tp]) ? 1 : 0; break;
+		case '*': tape[tp] = !tape[tp]; break;
 		case 'B': tape[tp] = (user_stack[sp--] > tape[tp]) ? 1 : 0; break;
 		case 'S': tape[tp] = (user_stack[sp--] < tape[tp]) ? 1 : 0; break;
 		case '\'':
@@ -193,5 +198,6 @@ void run_tsl_code(unsigned char* program) {
 				}
 			}
 			break;
+		case 'D': user_stack[sp + 1] = user_stack[sp]; sp++; break;
 	}
 }

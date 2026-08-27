@@ -12,6 +12,7 @@ SIMPLE_OPS = {
 	"pop": "$",
 	"drop": "_",
 	"swap": "X",
+	"dup": "D",
 	"pushaddr": ";",
 	"popaddr": "&",
 	"dropaddr": "\\",
@@ -23,7 +24,7 @@ SIMPLE_OPS = {
 	"shl": "L",
 	"shr": "R",
 	"eq": "=",
-	"neq": "*",
+	"not": "*",
 	"gt": "B",
 	"lt": "S",
 	"rand": "?",
@@ -87,6 +88,12 @@ def transpile_tsl(source: str) -> str:
 						output.append(f"[+{args[0]}]")
 					case "sub":
 						output.append(f"[-{args[0]}]")
+					case "pushimm":
+						output.append(f"[i{args[0]}]")
+					case "addtostk":
+						output.append(f"[a{args[0]}]")
+					case "subfstk":
+						output.append(f"[s{args[0]}]")
 					case "jumpaddr":
 						output.append(f"{{{args[0]}}}")
 					case "store":
