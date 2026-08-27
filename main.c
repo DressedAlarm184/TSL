@@ -1,14 +1,13 @@
-#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <termios.h>
 #include <stdint.h>
-#include <ctype.h>
 
 typedef struct {
-    int start;
-    int end;
+	int start;
+	int end;
 } Loop;
 
 int scan_block(const unsigned char* program, int ip, char open, char close, char alt, int* found_alt) {
@@ -35,15 +34,6 @@ int scan_block(const unsigned char* program, int ip, char open, char close, char
 		}
 	}
 	return ip;
-}
-
-void putch(uint16_t ch) {
-	unsigned char c = (unsigned char)(ch & 0xFF);
-	if (c == '\n' || c == '\t' || c == '\r') {
-		addch(c);
-	} else if (!iscntrl(c)) {
-		addch(c);
-	}
 }
 
 void populate_program_layout(int* ip, int functions[], unsigned char* program) {
@@ -80,15 +70,23 @@ void run_tsl_code(unsigned char* program) {
 			case '-': tape[tp]--; break;
 			case '>': tp++; break;
 			case '<': tp--; break;
-			case 'P': putch(tape[tp]); break;
-			case 'N': printw("%d", tape[tp]); break;
+			case 'P': putchar(tape[tp]); fflush(stdout); break;
+			case 'N': printf("%d", tape[tp]); fflush(stdout); break;
 			case 'L': tape[tp] <<= 1; break;
 			case 'R': tape[tp] >>= 1; break;
 			case '!': user_stack[++sp] = tape[tp]; break;
 			case '$': tape[tp] = user_stack[sp--]; break;
 			case '^': tape[tp] += user_stack[sp--]; break;
 			case '~': tape[tp] -= user_stack[sp--]; break;
-			case '#': tape[tp] = getch(); break;
+			case '#': {
+				struct termios old, new;
+				tcgetattr(STDIN_FILENO, &old);
+				new = old, new.c_lflag &= ~(ICANON | ECHO);
+				tcsetattr(STDIN_FILENO, TCSANOW, &new);
+				tape[tp] = getchar();
+				tcsetattr(STDIN_FILENO, TCSANOW, &old);
+				break;
+			}
 			case '?': tape[tp] = rand() % (tape[tp] ? tape[tp] + 1 : 65536); break;
 			case '{': {
 				ip++;
@@ -117,15 +115,12 @@ void run_tsl_code(unsigned char* program) {
 			case 'G': {
 				int start_tp = tp;
 				uint16_t max_len = user_stack[sp--];
-				char* temp_buf = malloc(max_len + 1);
-				echo();
-				getnstr(temp_buf, max_len);
-				noecho();
-				for (int i = 0; temp_buf[i] != '\0';) {
-					tape[tp++] = (unsigned char)temp_buf[i++];
-				}
+				char temp_buf[max_len + 1];
+				if (fgets(temp_buf, sizeof temp_buf, stdin) == NULL)
+					temp_buf[0] = '\0';
+				for (int i = 0; temp_buf[i] != '\0'; ++i)
+					tape[tp++] = (unsigned char)temp_buf[i];
 				tape[tp] = 0;
-				free(temp_buf);
 				tp = start_tp;
 				break;
 			}
@@ -161,7 +156,8 @@ void run_tsl_code(unsigned char* program) {
 			case 'S': tape[tp] = (user_stack[sp--] < tape[tp]) ? 1 : 0; break;
 			case '\'':
 				ip++;
-				while (program[ip] != '\'') putch(program[ip++]);
+				while (program[ip] != '\'') putchar(program[ip++]);
+				fflush(stdout);
 				break;
 			case 'M': tape[tp] *= user_stack[sp--]; break;
 			case '/': tape[tp] /= user_stack[sp--]; break;
@@ -230,13 +226,6 @@ void run_tsl_code(unsigned char* program) {
 
 		ip++, iterations++;
 		if (iterations % 10000 == 0) usleep(1000);
-
-		nodelay(stdscr, TRUE);
-		int ch = getch();
-		nodelay(stdscr, FALSE);
-		if (ch == 24) goto end;
-
-		refresh();
 	}
 
 	end:;
@@ -260,19 +249,11 @@ int main(int argc, char* argv[]) {
 	int size = ftell(file);
 	rewind(file);
 
-	char* program = malloc(size + 1);
+	char program[size + 1];
 	fread(program, 1, size, file);
 	program[size] = 0;
 
-	initscr(), cbreak(), noecho();
-	keypad(stdscr, TRUE), scrollok(stdscr, TRUE);
-
 	run_tsl_code((unsigned char*)program);
 
-	printw("\n\nTSL program has ended. Press any key to exit...");
-	getch();
-
-	endwin();
-	free(program);
 	return 0;
 }
