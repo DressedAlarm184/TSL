@@ -4,11 +4,18 @@
 #include <time.h>
 #include <termios.h>
 #include <stdint.h>
+#include <string.h>
 
 typedef struct {
 	int start;
 	int end;
 } Loop;
+
+typedef struct {
+    int return_ip;
+    int saved_tp;
+    int is_framed;
+} CallFrame;
 
 #include "helpers.c"
 #include "interpreter.c"

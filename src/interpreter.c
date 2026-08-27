@@ -1,8 +1,8 @@
 void run_tsl_code(unsigned char* program) {
 	int ip = 0, tp = 0, sp = 0, lp = 0, ap = 0, cp = 0;
-	uint16_t user_stack[1024] = {0}, tape[8192] = {0}, variables[26] = {0};
-	int functions[100] = {0}, call_stack[128] = {0}, addr_stack[256] = {0};
-	Loop loop_stack[64] = {0};
+	uint16_t user_stack[8192] = {0}, tape[32768] = {0}, variables[26] = {0};
+	int functions[100] = {0}, addr_stack[256] = {0};
+	Loop loop_stack[64] = {0}; CallFrame call_stack[128] = {0};
 
 	populate_program_layout(&ip, functions, program);
 
@@ -153,12 +153,22 @@ void run_tsl_code(unsigned char* program) {
 			tp = start_tp;
 			break;
 		}
-		case 'Q': ip = call_stack[--cp]; break;
-		case 'F': {
+		case 'Q':
+			cp--;
+			ip = call_stack[cp].return_ip;
+			if (call_stack[cp].is_framed) tp = call_stack[cp].saved_tp;
+			break;
+		case 'F':
+		case 'f': {
+			int is_framed = (program[ip] == 'F');
 			int func_index = 0;
 			sscanf((char*)&program[ip + 1], "%2d", &func_index);
-			call_stack[cp++] = ip + 2;
-			ip = functions[func_index] - 1;
+			call_stack[cp] = (CallFrame){.return_ip = ip + 2, .saved_tp = tp, .is_framed = is_framed};
+			if (is_framed) {
+				tp = 16384 + (cp * 128);
+				memset(&tape[tp], 0, 128 * sizeof(uint16_t));
+			}
+			ip = functions[func_index] - 1, cp++;
 			break;
 		}
 		case 'E': if (lp > 0) ip = loop_stack[--lp].end; break;

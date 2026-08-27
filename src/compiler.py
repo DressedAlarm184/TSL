@@ -80,6 +80,9 @@ def transpile_tsl(source: str) -> str:
 					case "call":
 						func_idx = int(args[0])
 						output.append(f"F{func_idx:02d}")
+					case "jump":
+						func_idx = int(args[0])
+						output.append(f"f{func_idx:02d}")
 					case "set":
 						output.append(f"[{args[0]}]")
 					case "add":
