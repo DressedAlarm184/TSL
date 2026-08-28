@@ -66,9 +66,16 @@ def transpile_tsl(source: str) -> str:
 			if not stmt:
 				continue
 				
-			if (stmt.startswith("'") and stmt.endswith("'")) or (stmt.startswith('"') and stmt.endswith('"')):
-				output.append(stmt)
+			match = re.match(r"^(printf|write)\s+'(.*)'$", stmt, re.IGNORECASE)
+			if match:
+				cmd, content = match.group(1).lower(), match.group(2)
+				quote = "'" if cmd == "printf" else '"'
+				output.append(f"{quote}{content}{quote}")
 				continue
+			elif stmt.lower().startswith(("printf", "write")):
+				cmd_name = "printf" if stmt.lower().startswith("printf") else "write"
+				sys.stderr.write(f"Syntax Error (line {line_num}): Invalid {cmd_name} syntax in '{stmt}'. Expected: {cmd_name} 'string'\n")
+				sys.exit(1)
 				
 			tokens = stmt.split()
 			cmd = tokens[0].lower()
