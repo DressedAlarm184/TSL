@@ -37,7 +37,7 @@ void populate_program_layout(int* ip, int functions[], unsigned char* program) {
 				in_string = ch;
 			} else if (ch == '@') {
 				functions[c++] = i;
-			} else if (ch == ':' && *ip == 0) {
+			} else if (ch == 'S' && *ip == 0) {
 				*ip = i + 1;
 			}
 		} else {
