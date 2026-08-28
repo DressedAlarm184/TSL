@@ -11,6 +11,8 @@ void run_tsl_code(unsigned char* program) {
 		case '-': tape[tp]--; break;
 		case '>': tp++; break;
 		case '<': tp--; break;
+		case 'P': putchar(tape[tp]); fflush(stdout); break;
+		case 'N': printf("%d", tape[tp]); fflush(stdout); break;
 		case ':': {
 			char sub_op = program[++ip];
 			switch (sub_op) {
