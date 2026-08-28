@@ -11,12 +11,6 @@ typedef struct {
 	int end;
 } Loop;
 
-typedef struct {
-    int return_ip;
-    int saved_tp;
-    int is_framed;
-} CallFrame;
-
 #include "helpers.c"
 #include "interpreter.c"
 
