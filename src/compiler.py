@@ -5,29 +5,32 @@ import re
 SIMPLE_OPS = {
 	"inc": "+",
 	"dec": "-",
-	"right": ">",
-	"left": "<",
+	"next": ">",
+	"prev": "<",
 
-	"push": "!",
-	"pop": "$",
+	"pusht": ":!",
+	"pop": ":$",
 	"drop": "_",
-	"swap": "X",
+	"swap": ":X",
 	"dup": "D",
+	"popadd": ":+",
+	"popsub": ":-",
+	"popmul": ":*",
+	"popdiv": ":/",
+	"popmod": ":%",
+	"eq": ":=",
+	"gt": ":>",
+	"lt": ":<",
+	"rand": "?",
+	"band": ":&",
+	"bor": ":|",
+	"bxor": ":^",
+	"bnot": ":~",
+
 	"pushaddr": ";",
 	"popaddr": "&",
 	"dropaddr": "\\",
-
-	"stkadd": "^",
-	"stksub": "~",
-	"stkmul": "M",
-	"stkdiv": "/",
-	"shl": "L",
-	"shr": "R",
-	"eq": "=",
-	"not": "*",
-	"gt": "B",
-	"lt": "S",
-	"rand": "?",
+	"lnot": "*",
 
 	"putchar": "P",
 	"printn": "N",
@@ -35,7 +38,7 @@ SIMPLE_OPS = {
 	"readline": "G",
 	"sleep": "K",
 
-	"entry": ":",
+	"entry": "S",
 	"return": "Q",
 	"while": "w(",
 	"endblock": ")",
@@ -88,14 +91,26 @@ def transpile_tsl(source: str) -> str:
 						output.append(f"[+{args[0]}]")
 					case "sub":
 						output.append(f"[-{args[0]}]")
-					case "pushimm":
+					case "mul":
+						output.append(f"[*{args[0]}]")
+					case "div":
+						output.append(f"[/{args[0]}]")
+					case "pushi":
 						output.append(f"[i{args[0]}]")
-					case "addtostk":
+					case "addstk":
 						output.append(f"[a{args[0]}]")
-					case "subfstk":
+					case "substk":
 						output.append(f"[s{args[0]}]")
-					case "jumpaddr":
-						output.append(f"{{{args[0]}}}")
+					case "mulstk":
+						output.append(f"[m{args[0]}]")
+					case "divstk":
+						output.append(f"[d{args[0]}]")
+					case "setaddr":
+						output.append(f"[p{args[0]}]")
+					case "right":
+						output.append(f"[>{args[0]}]")
+					case "left":
+						output.append(f"[<{args[0]}]")
 					case "store":
 						output.append(f".{args[0].upper()}")
 					case "load":
