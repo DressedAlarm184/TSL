@@ -98,7 +98,7 @@ void run_tsl_code(unsigned char* program) {
 		}
 		case ')':
 			if (lp > 0 && ip == loop_stack[lp - 1].end) {
-				if (tape[tp] != 0) {
+				if (tape[tp] != 0 || program[loop_stack[lp - 1].start - 1] == 'f') {
 					ip = loop_stack[lp - 1].start;
 				} else {
 					lp--;
@@ -186,11 +186,11 @@ void run_tsl_code(unsigned char* program) {
 			}
 			break;
 		case '|': ip = scan_block(program, ip, '(', ')', 0, NULL); break;
-		case 'w':
+		case 'w': case 'f':
 			if (program[ip + 1] == '(') {
 				ip++;
 				int end_ip = scan_block(program, ip, '(', ')', 0, NULL);
-				if (tape[tp] == 0) {
+				if (tape[tp] == 0 && program[ip - 1] != 'f') {
 					ip = end_ip;
 				} else {
 					loop_stack[lp++] = (Loop){ .start = ip, .end = end_ip };

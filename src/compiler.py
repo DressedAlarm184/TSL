@@ -48,6 +48,7 @@ SIMPLE_OPS = {
 	"if": "i(",
 	"else": "|",
 	"function": "@",
+	"forever": "f("
 }
 
 def transpile_tsl(source: str) -> str:
