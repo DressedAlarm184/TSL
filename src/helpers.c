@@ -26,17 +26,20 @@ int scan_block(const unsigned char* program, int ip, char open, char close, char
 	return ip;
 }
 
-void populate_program_layout(int* ip, int functions[], unsigned char* program) {
+void populate_program_layout(int* ip, Function* functions, unsigned char* program) {
 	char in_string = 0;
 
-	for (int i = 0, c = 0; program[i] != 0; i++) {
+	for (int i = 0; program[i] != 0; i++) {
 		char ch = program[i];
 
 		if (in_string == 0) {
 			if (ch == '\'' || ch == '"') {
 				in_string = ch;
 			} else if (ch == '@') {
-				functions[c++] = i;
+				int start_ip = i + 1, requested = 0, index = 0;
+				i = scan_block(program, start_ip, '(', ')', 0, NULL);
+				sscanf(&program[start_ip], "(%d,%d)", &index, &requested);
+				functions[index] = (Function){.entry = i + 1, .tape_space = requested};
 			} else if (ch == 'S' && *ip == 0) {
 				*ip = i + 1;
 			}

@@ -11,6 +11,17 @@ typedef struct {
 	int end;
 } Loop;
 
+typedef struct {
+	int entry;
+	int tape_space;
+} Function;
+
+typedef struct {
+	Function* func;
+	int return_tp;
+	int return_ip;
+} CallStack;
+
 #include "helpers.c"
 #include "interpreter.c"
 

@@ -47,7 +47,6 @@ SIMPLE_OPS = {
 	"break": "E",
 	"if": "i(",
 	"else": "|",
-	"function": "@",
 	"forever": "f("
 }
 
@@ -87,9 +86,11 @@ def transpile_tsl(source: str) -> str:
 				
 			try:
 				match cmd:
+					case "function":
+						output.append(f"@({args[0]},{args[1]})")
 					case "call":
 						func_idx = int(args[0])
-						output.append(f"F{func_idx:02d}")
+						output.append(f"F{func_idx:03d}")
 					case "set":
 						output.append(f"[{args[0]}]")
 					case "add":

@@ -1,8 +1,8 @@
 void run_tsl_code(unsigned char* program) {
 	int ip = 0, tp = 0, sp = 0, lp = 0, ap = 0, cp = 0;
 	uint16_t user_stack[8192] = {0}, tape[32768] = {0}, variables[26] = {0};
-	int functions[100] = {0}, addr_stack[256] = {0};
-	Loop loop_stack[64] = {0}; int call_stack[128] = {0};
+	int addr_stack[256] = {0}; CallStack call_stack[512] = {0};
+	Loop loop_stack[64] = {0}; Function functions[1000] = {0};
 
 	populate_program_layout(&ip, functions, program);
 
@@ -167,12 +167,23 @@ void run_tsl_code(unsigned char* program) {
 			tp = start_tp;
 			break;
 		}
-		case 'Q': ip = call_stack[--cp]; break;
+		case 'Q': {
+			CallStack* entry = &call_stack[--cp];
+			if (entry->func->tape_space > 0) tp = entry->return_tp;
+			ip = entry->return_ip;
+			break;
+		}
 		case 'F': {
-			int func_index = 0;
-			sscanf((char*)&program[ip + 1], "%2d", &func_index);
-			call_stack[cp] = ip + 2;
-			ip = functions[func_index] - 1, cp++;
+			int idx = 0; sscanf((char*)&program[ip + 1], "%3d", &idx);
+			CallStack entry = (CallStack){.func = &functions[idx], .return_ip = ip + 3, .return_tp = tp};
+			call_stack[cp++] = entry, ip = entry.func->entry - 1;
+			if (entry.func->tape_space > 0) {
+				int new_tp = 16384;
+				for (int i = 0; i < cp - 1; i++) {
+					new_tp += call_stack[i].func->tape_space;
+				}
+				tp = new_tp;
+			}
 			break;
 		}
 		case 'E': if (lp > 0) ip = loop_stack[--lp].end; break;
