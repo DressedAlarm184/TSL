@@ -1,8 +1,6 @@
-# strlen
-# Arguments: Pointer to string on stack
-# Return: Length pushed to stack
-
-function 999 0
+function 999 0 strlen
+	# Arguments: Pointer to string on stack
+	# Return: Length pushed to stack
 	pushtp, swap, poptp
 	pushi 0
 	while

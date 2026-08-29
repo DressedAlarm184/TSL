@@ -55,6 +55,8 @@ SIMPLE_OPS = {
 	"parseint": "I"
 }
 
+function_names = {}
+
 def transpile_tsl(source: str) -> str:
 	output = []
 	
@@ -100,8 +102,9 @@ def transpile_tsl(source: str) -> str:
 							sys.exit(1)
 					case "function":
 						output.append(f"@({args[0]},{args[1]})")
+						function_names[args[2]] = int(args[0])
 					case "call":
-						func_idx = int(args[0])
+						func_idx = function_names[args[0]]
 						output.append(f"F{func_idx:03d}")
 					case "set":
 						output.append(f"[{args[0]}]")
