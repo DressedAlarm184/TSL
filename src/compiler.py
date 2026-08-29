@@ -91,6 +91,13 @@ def transpile_tsl(source: str) -> str:
 				
 			try:
 				match cmd:
+					case "incstdlib":
+						try:
+							with open("src/stdlib.tsle", "r") as f:
+								output.append(transpile_tsl(f.read()))
+						except Exception as e:
+							sys.stderr.write(f"Error reading standard library file: {e}\n")
+							sys.exit(1)
 					case "function":
 						output.append(f"@({args[0]},{args[1]})")
 					case "call":
