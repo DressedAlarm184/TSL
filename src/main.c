@@ -18,8 +18,7 @@ typedef struct {
 
 typedef struct {
 	Function* func;
-	int return_tp;
-	int return_ip;
+	struct {int ip, tp, lp;} ret;
 } CallStack;
 
 #include "helpers.c"

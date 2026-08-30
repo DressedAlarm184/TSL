@@ -204,13 +204,13 @@ void run_tsl_code(unsigned char* program) {
 		}
 		case 'Q': {
 			CallStack* entry = &call_stack[--cp];
-			if (entry->func->tape_space > 0) tp = entry->return_tp;
-			ip = entry->return_ip;
+			if (entry->func->tape_space > 0) tp = entry->ret.tp;
+			ip = entry->ret.ip, lp = entry->ret.lp;
 			break;
 		}
 		case 'F': {
 			int idx = 0; sscanf((char*)&program[ip + 1], "%3d", &idx);
-			CallStack entry = (CallStack){.func = &functions[idx], .return_ip = ip + 3, .return_tp = tp};
+			CallStack entry = (CallStack){.func = &functions[idx],.ret = {.ip = ip + 3, .tp = tp, .lp = lp}};
 			call_stack[cp++] = entry, ip = entry.func->entry - 1;
 			if (entry.func->tape_space > 0) {
 				int new_tp = 16384;
