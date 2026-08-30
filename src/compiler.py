@@ -59,6 +59,7 @@ function_names = {}
 
 def transpile_tsl(source: str) -> str:
 	output = []
+	allow_implicit_calls = False
 	
 	for line_num, raw_line in enumerate(source.splitlines(), start=1):
 		line = re.sub(r'(#|//).*$', '', raw_line).strip()
@@ -100,6 +101,8 @@ def transpile_tsl(source: str) -> str:
 						except Exception as e:
 							sys.stderr.write(f"Error reading standard library file: {e}\n")
 							sys.exit(1)
+					case "allowimplicitcalls":
+						allow_implicit_calls = int(args[0])
 					case "function":
 						output.append(f"@({args[0]},{args[1]})")
 						function_names[args[2]] = int(args[0])
@@ -137,12 +140,20 @@ def transpile_tsl(source: str) -> str:
 					case "load":
 						output.append(f",{args[0].upper()}")
 					case _:
-						sys.stderr.write(f"Syntax Error (line {line_num}): Unknown instruction '{stmt}'\n")
-						sys.exit(1)
+						if allow_implicit_calls:
+							try:
+								func_idx = function_names[cmd]
+								output.append(f"F{func_idx:03d}")
+							except:
+								sys.stderr.write(f"Syntax Error (line {line_num}): Unknown instruction '{stmt}'. Correct typo or define function with that name.\n")
+								sys.exit(1)
+						else:
+							sys.stderr.write(f"Syntax Error (line {line_num}): Unknown instruction '{stmt}'\n")
+							sys.exit(1)
 			except IndexError:
 				sys.stderr.write(f"Syntax Error (line {line_num}): Missing argument for '{cmd}'\n")
 				sys.exit(1)
-			except ValueError:
+			except (ValueError, KeyError):
 				sys.stderr.write(f"Syntax Error (line {line_num}): Invalid argument in '{stmt}'\n")
 				sys.exit(1)
 					
