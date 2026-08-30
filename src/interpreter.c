@@ -68,6 +68,12 @@ void run_tsl_code(unsigned char* program) {
 				case 'j': tp = user_stack[sp--]; break;
 				case 'D': case 'd': user_stack[sp + 1] = user_stack[sp]; sp++; break;
 				case '_': if (sp > 0) sp--; break;
+				case 'V': user_stack[sp] = variables[user_stack[sp]]; break;
+				case 'v': {
+					int var_index = user_stack[sp--];
+					variables[var_index] = user_stack[sp--];
+					break;
+				}
 			}
 			break;
 		}

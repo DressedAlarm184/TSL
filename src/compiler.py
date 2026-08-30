@@ -27,6 +27,8 @@ SIMPLE_OPS = {
 	"swapt": ":X",
 	"pushtp": ":t",
 	"poptp": ":j",
+	"pushvar": ":V",
+	"popvar": ":v",
 
 	"dup": ":D",
 	"drop": ":_",
