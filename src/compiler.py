@@ -108,13 +108,14 @@ def transpile_tsl(source: str) -> str:
 						allow_implicit_calls = int(args[0])
 					case "function":
 						output.append(f"@({args[0]},{args[1]})")
-						local_function_names[args[2]] = int(args[0])
+					case "define" | "export":
+						local_function_names[args[1]] = int(args[0])
+						if cmd == "export":
+							global_function_names[args[1]] = local_function_names[args[1]]
 					case "call":
 						function_names = global_function_names | local_function_names
 						func_idx = function_names[args[0]]
 						output.append(f"F{func_idx:03d}")
-					case "export":
-						global_function_names[args[0]] = local_function_names[args[0]]
 					case "set":
 						output.append(f"[{args[0]}]")
 					case "add":
