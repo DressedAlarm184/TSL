@@ -7,16 +7,18 @@ end
 export 999 strlen
 export 998 pushallvars
 export 997 popallvars
+export 996 stripnewline
 
 
 function 999 0
-	pushtp, swap, poptp
+	pushtp
 	pushi 0
 	while
 		addstk 1
 		next
 	endblock
-	swap, poptp
+	swap
+	poptp
 	return
 
 
@@ -40,4 +42,15 @@ function 997 2
 		prev
 		dec
 	endblock
+	return
+
+
+function 996 0
+	pushtp
+	while
+		next
+	endblock
+	prev
+	set 0
+	poptp
 	return
