@@ -1,6 +1,6 @@
 function 999 0 strlen
 	# Arguments: Pointer to string on stack
-	# Return: Length pushed to stack
+	# Effect: Length pushed to stack
 	pushtp, swap, poptp
 	pushi 0
 	while
@@ -8,4 +8,31 @@ function 999 0 strlen
 		next
 	endblock
 	swap, poptp
+	return
+
+
+function 998 1 pushallvars
+	# Arguments: None
+	# Effect: Pushes all 26 vars in order from Z to A
+	set 26
+	while
+		dec
+		pusht
+		pushvar
+	endblock
+	return
+
+
+function 997 2 popallvars
+	# Arguments: None
+	# Effect: Pops all 26 vars and reverses pushallvars
+	set 26
+	while
+		next
+		pusht
+		popvar
+		inc
+		prev
+		dec
+	endblock
 	return
