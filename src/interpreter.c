@@ -218,6 +218,7 @@ void run_tsl_code(unsigned char* program) {
 					new_tp += call_stack[i].func->tape_space;
 				}
 				tp = new_tp;
+				for (int i = 0; i < entry.func->tape_space; i++) tape[tp + i] = 0;
 			}
 			break;
 		}
