@@ -36,3 +36,8 @@ function 997 2 popallvars
 		dec
 	endblock
 	return
+
+
+export strlen
+export pushallvars
+export popallvars

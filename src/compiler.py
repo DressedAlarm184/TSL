@@ -57,11 +57,12 @@ SIMPLE_OPS = {
 	"parseint": "I"
 }
 
-function_names = {}
+global_function_names = {}
 
 def transpile_tsl(source: str) -> str:
 	output = []
 	allow_implicit_calls = False
+	local_function_names = {}
 	
 	for line_num, raw_line in enumerate(source.splitlines(), start=1):
 		line = re.sub(r'(#|//).*$', '', raw_line).strip()
@@ -107,10 +108,13 @@ def transpile_tsl(source: str) -> str:
 						allow_implicit_calls = int(args[0])
 					case "function":
 						output.append(f"@({args[0]},{args[1]})")
-						function_names[args[2]] = int(args[0])
+						local_function_names[args[2]] = int(args[0])
 					case "call":
+						function_names = global_function_names | local_function_names
 						func_idx = function_names[args[0]]
 						output.append(f"F{func_idx:03d}")
+					case "export":
+						global_function_names[args[0]] = local_function_names[args[0]]
 					case "set":
 						output.append(f"[{args[0]}]")
 					case "add":
@@ -144,6 +148,7 @@ def transpile_tsl(source: str) -> str:
 					case _:
 						if allow_implicit_calls:
 							try:
+								function_names = global_function_names | local_function_names
 								func_idx = function_names[cmd]
 								output.append(f"F{func_idx:03d}")
 							except:
