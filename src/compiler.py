@@ -59,7 +59,7 @@ SIMPLE_OPS = {
 
 global_function_names = {}
 
-def transpile_tsl(source: str) -> str:
+def transpile_tsl(source: str, file: str) -> str:
 	output = []
 	allow_implicit_calls = False
 	local_function_names = {}
@@ -84,7 +84,7 @@ def transpile_tsl(source: str) -> str:
 				continue
 			elif stmt.lower().startswith(("printf", "write")):
 				cmd_name = "printf" if stmt.lower().startswith("printf") else "write"
-				sys.stderr.write(f"Syntax Error (line {line_num}): Invalid {cmd_name} syntax in '{stmt}'. Expected: {cmd_name} 'string'\n")
+				sys.stderr.write(f"Syntax Error ({file}, line {line_num}): Invalid {cmd_name} syntax in '{stmt}'. Expected: {cmd_name} 'string'\n")
 				sys.exit(1)
 				
 			tokens = stmt.split()
@@ -100,7 +100,7 @@ def transpile_tsl(source: str) -> str:
 					case "incstdlib":
 						try:
 							with open("src/stdlib.tsle", "r") as f:
-								output.append(transpile_tsl(f.read()))
+								output.append(transpile_tsl(f.read(), "stdlib"))
 						except Exception as e:
 							sys.stderr.write(f"Error reading standard library file: {e}\n")
 							sys.exit(1)
@@ -153,16 +153,16 @@ def transpile_tsl(source: str) -> str:
 								func_idx = function_names[cmd]
 								output.append(f"F{func_idx:03d}")
 							except:
-								sys.stderr.write(f"Syntax Error (line {line_num}): Unknown instruction '{stmt}'. Correct typo or define function with that name.\n")
+								sys.stderr.write(f"Syntax Error ({file}, line {line_num}): Unknown instruction '{stmt}'. Correct typo or define function with that name.\n")
 								sys.exit(1)
 						else:
-							sys.stderr.write(f"Syntax Error (line {line_num}): Unknown instruction '{stmt}'\n")
+							sys.stderr.write(f"Syntax Error ({file}, line {line_num}): Unknown instruction '{stmt}'\n")
 							sys.exit(1)
 			except IndexError:
-				sys.stderr.write(f"Syntax Error (line {line_num}): Missing argument for '{cmd}'\n")
+				sys.stderr.write(f"Syntax Error ({file}, line {line_num}): Missing argument for '{cmd}'\n")
 				sys.exit(1)
 			except (ValueError, KeyError):
-				sys.stderr.write(f"Syntax Error (line {line_num}): Invalid argument in '{stmt}'\n")
+				sys.stderr.write(f"Syntax Error ({file}, line {line_num}): Invalid argument in '{stmt}'\n")
 				sys.exit(1)
 					
 	return "".join(output)
@@ -185,7 +185,7 @@ def main():
 		sys.stderr.write(f"Error reading file: {e}\n")
 		sys.exit(1)
 
-	compiled = transpile_tsl(source_content)
+	compiled = transpile_tsl(source_content, source.rsplit("/", 1)[-1])
 	
 	try:
 		with open(output, "w", encoding="utf-8") as f:
