@@ -107,14 +107,16 @@ def transpile_tsl(source: str, file: str) -> str:
 					case "allowimplicitcalls":
 						allow_implicit_calls = int(args[0])
 					case "function":
-						output.append(f"@({args[0]},{args[1]})")
+						function_names = global_function_names | local_function_names
+						function = function_names[args[0]]
+						output.append(f"@({function["id"]},{function["tape_space"]})")
 					case "define" | "export":
-						local_function_names[args[1]] = int(args[0])
+						local_function_names[args[0]] = {"id": int(args[1]), "tape_space": int(args[2])}
 						if cmd == "export":
-							global_function_names[args[1]] = local_function_names[args[1]]
+							global_function_names[args[0]] = local_function_names[args[0]]
 					case "call":
 						function_names = global_function_names | local_function_names
-						func_idx = function_names[args[0]]
+						func_idx = function_names[args[0]]["id"]
 						output.append(f"F{func_idx:03d}")
 					case "set":
 						output.append(f"[{args[0]}]")
@@ -150,7 +152,7 @@ def transpile_tsl(source: str, file: str) -> str:
 						if allow_implicit_calls:
 							try:
 								function_names = global_function_names | local_function_names
-								func_idx = function_names[cmd]
+								func_idx = function_names[cmd]["id"]
 								output.append(f"F{func_idx:03d}")
 							except:
 								sys.stderr.write(f"Syntax Error ({file}, line {line_num}): Unknown instruction '{stmt}'. Correct typo or define function with that name.\n")
@@ -161,7 +163,7 @@ def transpile_tsl(source: str, file: str) -> str:
 			except IndexError:
 				sys.stderr.write(f"Syntax Error ({file}, line {line_num}): Missing argument for '{cmd}'\n")
 				sys.exit(1)
-			except (ValueError, KeyError):
+			except (ValueError, KeyError, AttributeError):
 				sys.stderr.write(f"Syntax Error ({file}, line {line_num}): Invalid argument in '{stmt}'\n")
 				sys.exit(1)
 					

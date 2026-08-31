@@ -4,13 +4,13 @@ entry
 call main
 end
 
-export 999 strlen
-export 998 pushallvars
-export 997 popallvars
-export 996 stripnewline
+export strlen 999 0
+export pushallvars 998 1
+export popallvars 997 2
+export stripnewline 996 0
 
 
-function 999 0
+function strlen
 	pushtp
 	pushi 0
 	while
@@ -22,7 +22,7 @@ function 999 0
 	return
 
 
-function 998 1
+function pushallvars
 	set 26
 	while
 		dec
@@ -32,7 +32,7 @@ function 998 1
 	return
 
 
-function 997 2
+function popallvars
 	set 26
 	while
 		next
@@ -45,7 +45,7 @@ function 997 2
 	return
 
 
-function 996 0
+function stripnewline
 	pushtp
 	while
 		next
