@@ -136,7 +136,7 @@ def transpile_tsl(source: str, file: str) -> str:
 					case "call":
 						function_names = global_function_names | local_function_names
 						if args[0] == "indirect":
-							output.append("FXXX")
+							output.append("Fx")
 						elif args[0].isdigit():
 							output.append(f"F{int(args[0]):03d}")
 						else:

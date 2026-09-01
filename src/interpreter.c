@@ -209,10 +209,10 @@ void run_tsl_code(unsigned char* program) {
 			break;
 		}
 		case 'F': {
-			char idx_str[4] = {0}; int idx = 0; memcpy(idx_str, &program[ip + 1], 3);
-			if (strcmp(idx_str, "XXX") == 0) idx = user_stack[sp--];
-			else sscanf(idx_str, "%3d", &idx);
-			CallStack entry = (CallStack){.func = &functions[idx],.ret = {.ip = ip + 3, .tp = tp, .lp = lp}};
+			int idx = 0, indirect = 0;
+			if (program[ip + 1] == 'x') indirect = 1, idx = user_stack[sp--];
+			else sscanf((char*)&program[ip + 1], "%3d", &idx);
+			CallStack entry = (CallStack){.func = &functions[idx],.ret = {.ip = ip + (indirect ? 1 : 3), .tp = tp, .lp = lp}};
 			call_stack[cp++] = entry, ip = entry.func->entry - 1;
 			if (entry.func->tape_space > 0) {
 				int new_tp = 16384;
