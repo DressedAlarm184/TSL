@@ -57,6 +57,21 @@ SIMPLE_OPS = {
 	"parseint": "I"
 }
 
+IMMEDIATE_PREFIXS = {
+	"addi": "+",
+	"subi": "-",
+	"muli": "*",
+	"divi": "/",
+	"pushi": "i",
+	"addstki": "a",
+	"substki": "s",
+	"mulstki": "m",
+	"divstki": "d",
+	"setaddr": "p",
+	"right": ">",
+	"left": "<",
+}
+
 global_function_names = {}
 
 def transpile_tsl(source: str, file: str) -> str:
@@ -129,34 +144,12 @@ def transpile_tsl(source: str, file: str) -> str:
 							output.append(f"F{func_idx:03d}")
 					case "set":
 						output.append(f"[{args[0]}]")
-					case "add":
-						output.append(f"[+{args[0]}]")
-					case "sub":
-						output.append(f"[-{args[0]}]")
-					case "mul":
-						output.append(f"[*{args[0]}]")
-					case "div":
-						output.append(f"[/{args[0]}]")
-					case "pushi":
-						output.append(f"[i{args[0]}]")
-					case "addstk":
-						output.append(f"[a{args[0]}]")
-					case "substk":
-						output.append(f"[s{args[0]}]")
-					case "mulstk":
-						output.append(f"[m{args[0]}]")
-					case "divstk":
-						output.append(f"[d{args[0]}]")
-					case "setaddr":
-						output.append(f"[p{args[0]}]")
-					case "right":
-						output.append(f"[>{args[0]}]")
-					case "left":
-						output.append(f"[<{args[0]}]")
 					case "store":
 						output.append(f".{args[0].upper()}")
 					case "load":
 						output.append(f",{args[0].upper()}")
+					case op if op in IMMEDIATE_PREFIXS:
+						output.append(f"[{IMMEDIATE_PREFIXS[op]}{args[0]}]")
 					case _:
 						if allow_implicit_calls:
 							try:

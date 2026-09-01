@@ -15,7 +15,7 @@ function strlen
 	pushtp
 	pushi 0
 	while
-		addstk 1
+		addstki 1
 		next
 	endblock
 	swap
