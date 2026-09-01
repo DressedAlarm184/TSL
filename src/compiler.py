@@ -117,7 +117,7 @@ def transpile_tsl(source: str, file: str) -> str:
 					case "pushf":
 						function_names = global_function_names | local_function_names
 						func_idx = function_names[args[0]]["id"]
-						output.append(f"[i{func_idx:03d}]")
+						output.append(f"[i{func_idx}]")
 					case "call":
 						function_names = global_function_names | local_function_names
 						if args[0] == "indirect":
