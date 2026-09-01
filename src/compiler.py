@@ -114,10 +114,19 @@ def transpile_tsl(source: str, file: str) -> str:
 						local_function_names[args[0]] = {"id": int(args[1]), "tape_space": int(args[2])}
 						if cmd == "export":
 							global_function_names[args[0]] = local_function_names[args[0]]
-					case "call":
+					case "pushf":
 						function_names = global_function_names | local_function_names
 						func_idx = function_names[args[0]]["id"]
-						output.append(f"F{func_idx:03d}")
+						output.append(f"[i{func_idx:03d}]")
+					case "call":
+						function_names = global_function_names | local_function_names
+						if args[0] == "indirect":
+							output.append("FXXX")
+						elif args[0].isdigit():
+							output.append(f"F{int(args[0]):03d}")
+						else:
+							func_idx = function_names[args[0]]["id"]
+							output.append(f"F{func_idx:03d}")
 					case "set":
 						output.append(f"[{args[0]}]")
 					case "add":
