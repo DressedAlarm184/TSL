@@ -1,4 +1,29 @@
-void run_tsl_code(unsigned char* program) {
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdint.h>
+#include <termios.h>
+#include <string.h>
+
+typedef struct {
+	int start;
+	int end;
+} Loop;
+
+typedef struct {
+	int entry;
+	int tape_space;
+} Function;
+
+typedef struct {
+	Function* func;
+	struct {int ip, tp, lp;} ret;
+} CallStack;
+
+int scan_block(char* program, int ip, char open, char close, char alt, int* found_alt);
+void populate_program_layout(int* ip, Function* functions, char* program);
+
+void run_tsl_code(char* program) {
 	int ip = 0, tp = 0, sp = 0, lp = 0, cp = 0;
 	uint16_t user_stack[8192] = {0}, tape[32768] = {0}, variables[26] = {0};
 	CallStack call_stack[512] = {0}; Loop loop_stack[64] = {0}; Function functions[1000] = {0};
@@ -246,5 +271,56 @@ void run_tsl_code(unsigned char* program) {
 				}
 			}
 			break;
+	}
+}
+
+int scan_block(char* program, int ip, char open, char close, char alt, int* found_alt) {
+	int balance = 1;
+	char in_string = 0;
+
+	if (found_alt) *found_alt = 0;
+
+	while (balance > 0 && program[ip] != 0) {
+		ip++;
+		char ch = program[ip];
+
+		if (in_string == 0 && (ch == '\'' || ch == '"')) in_string = ch;
+		else if (in_string == ch) in_string = 0;
+
+		if (in_string == 0) {
+			if (ch == open) {
+				balance++;
+			} else if (ch == close) {
+				balance--;
+			} else if (alt != 0 && ch == alt && balance == 1) {
+				if (found_alt) *found_alt = 1;
+				break;
+			}
+		}
+	}
+
+	return ip;
+}
+
+void populate_program_layout(int* ip, Function* functions, char* program) {
+	char in_string = 0;
+
+	for (int i = 0; program[i] != 0; i++) {
+		char ch = program[i];
+
+		if (in_string == 0) {
+			if (ch == '\'' || ch == '"') {
+				in_string = ch;
+			} else if (ch == '@') {
+				int start_ip = i + 1, requested = 0, index = 0;
+				i = scan_block(program, start_ip, '(', ')', 0, NULL);
+				sscanf(&program[start_ip], "(%d,%d)", &index, &requested);
+				functions[index] = (Function){.entry = i + 1, .tape_space = requested};
+			} else if (ch == 'S' && *ip == 0) {
+				*ip = i + 1;
+			}
+		} else {
+			if (ch == in_string) in_string = 0;
+		}
 	}
 }

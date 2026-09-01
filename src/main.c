@@ -1,28 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <time.h>
-#include <termios.h>
-#include <stdint.h>
-#include <string.h>
 
-typedef struct {
-	int start;
-	int end;
-} Loop;
-
-typedef struct {
-	int entry;
-	int tape_space;
-} Function;
-
-typedef struct {
-	Function* func;
-	struct {int ip, tp, lp;} ret;
-} CallStack;
-
-#include "helpers.c"
-#include "interpreter.c"
+int run_tsl_code(char* program);
 
 int main(int argc, char* argv[]) {
 	srand(time(NULL));
@@ -46,7 +26,7 @@ int main(int argc, char* argv[]) {
 	fread(program, 1, size, file);
 	program[size] = 0;
 
-	run_tsl_code((unsigned char*)program);
+	run_tsl_code(program);
 
 	return 0;
 }
