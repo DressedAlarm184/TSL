@@ -8,6 +8,7 @@ export strlen 999 0
 export pushallvars 998 1
 export popallvars 997 2
 export stripnewline 996 0
+export forloop 995 4
 
 
 function strlen
@@ -53,4 +54,19 @@ function stripnewline
 	prev
 	set 0
 	poptp
+	return
+
+
+function forloop
+	right 2, pop, prev, pop, prev, pop
+	forever
+		right 2, pusht, next, pop
+		left 2, pusht, right 2
+		gt, if
+			break
+		endblock
+		left 2, pusht, prev, pusht
+		call indirect
+		next, inc, prev
+	endblock
 	return
