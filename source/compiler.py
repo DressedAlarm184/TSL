@@ -117,12 +117,12 @@ def transpile_tsl(source: str, file: str) -> str:
 				
 			try:
 				match cmd:
-					case "incstdlib":
+					case "include":
 						try:
-							with open("src/stdlib.tsle", "r") as f:
-								output.append(transpile_tsl(f.read(), "stdlib"))
+							with open(f"modules/{args[0]}.tsle", "r") as f:
+								output.append(transpile_tsl(f.read(), f"{args[0]}"))
 						except Exception as e:
-							sys.stderr.write(f"Error reading standard library file: {e}\n")
+							sys.stderr.write(f"Error reading module: {e}\n")
 							sys.exit(1)
 					case "allowimplicitcalls":
 						allow_implicit_calls = int(args[0])

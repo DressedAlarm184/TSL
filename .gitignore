@@ -1,2 +1,4 @@
-build
+output
 programs
+modules/*
+!modules/stdlib.tsle
