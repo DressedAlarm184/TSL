@@ -3,9 +3,11 @@ build targets="library main":
 	set -e
 	for target in {{targets}}; do
 		if [ "$target" = "main" ]; then
-			gcc -o build/tsl src/main.c -Lbuild -lTSL -Wl,-rpath,'$ORIGIN'
+			cc -o build/tsl src/main.c -Lbuild -lTSL -Wl,-rpath,'$ORIGIN'
 		elif [ "$target" = "library" ]; then
-			gcc -o build/libTSL.so -fPIC -shared src/interpreter.c
+			cc -o build/libTSL.so -fPIC -shared src/interpreter.c
+		elif [ "$target" = "shell" ]; then
+			cc -o build/tslsh src/shell.c -Lbuild -lTSL -Wl,-rpath,'$ORIGIN' -lreadline
 		else
 			echo "Invalid build target."
 			exit 1
@@ -19,3 +21,7 @@ compile input output:
 run program:
 	#!/bin/sh
 	./build/tsl programs/{{program}}
+
+shell:
+	#!/bin/sh
+	./build/tslsh
