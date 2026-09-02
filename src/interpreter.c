@@ -102,6 +102,16 @@ void run_tsl_code(char* program) {
 			}
 			break;
 		}
+		case ';': {
+			char sub_op = program[++ip];
+			switch (sub_op) {
+				case '+': user_stack[sp - 1] += user_stack[sp]; sp--; break;
+				case '-': user_stack[sp - 1] -= user_stack[sp]; sp--; break;
+				case '*': user_stack[sp - 1] *= user_stack[sp]; sp--; break;
+				case '/': user_stack[sp - 1] /= user_stack[sp]; sp--; break;
+			}
+			break;
+		}
 		case '#': {
 			struct termios old, new;
 			tcgetattr(STDIN_FILENO, &old);

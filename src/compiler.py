@@ -38,6 +38,11 @@ SIMPLE_OPS = {
 	"roll": ":r",
 	"pick": ":P",
 
+	"stkadd": ";+",
+	"stksub": ";-",
+	"stkmul": ";*",
+	"stkdiv": ";/",
+
 	"putchar": "P",
 	"printn": "N",
 	"getchar": "#",
