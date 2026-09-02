@@ -83,6 +83,9 @@ def transpile_tsl(source: str, file: str) -> str:
 	output = []
 	allow_implicit_calls = False
 	local_function_names = {}
+
+	def functions():
+		return global_function_names | local_function_names
 	
 	for line_num, raw_line in enumerate(source.splitlines(), start=1):
 		line = re.sub(r'(#|//).*$', '', raw_line).strip()
@@ -127,25 +130,22 @@ def transpile_tsl(source: str, file: str) -> str:
 					case "allowimplicitcalls":
 						allow_implicit_calls = int(args[0])
 					case "function":
-						function_names = global_function_names | local_function_names
-						function = function_names[args[0]]
+						function = functions()[args[0]]
 						output.append(f"@({function["id"]},{function["tape_space"]})")
 					case "define" | "export":
 						local_function_names[args[0]] = {"id": int(args[1]), "tape_space": int(args[2])}
 						if cmd == "export":
 							global_function_names[args[0]] = local_function_names[args[0]]
 					case "pushf":
-						function_names = global_function_names | local_function_names
-						func_idx = function_names[args[0]]["id"]
+						func_idx = functions()[args[0]]["id"]
 						output.append(f"[i{func_idx}]")
 					case "call":
-						function_names = global_function_names | local_function_names
 						if args[0] == "indirect":
 							output.append("Fx")
 						elif args[0].isdigit():
 							output.append(f"F{int(args[0]):03d}")
 						else:
-							func_idx = function_names[args[0]]["id"]
+							func_idx = functions()[args[0]]["id"]
 							output.append(f"F{func_idx:03d}")
 					case "set":
 						output.append(f"[{args[0]}]")
@@ -158,8 +158,7 @@ def transpile_tsl(source: str, file: str) -> str:
 					case _:
 						if allow_implicit_calls:
 							try:
-								function_names = global_function_names | local_function_names
-								func_idx = function_names[cmd]["id"]
+								func_idx = functions()[cmd]["id"]
 								output.append(f"F{func_idx:03d}")
 							except:
 								sys.stderr.write(f"Syntax Error ({file}, line {line_num}): Unknown instruction '{stmt}'. Correct typo or define function with that name.\n")
