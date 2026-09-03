@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <ncurses.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <termios.h>
@@ -27,6 +28,7 @@ void run_tsl_code(char* program) {
 	int ip = 0, tp = 0, sp = 0, lp = 0, cp = 0;
 	uint16_t user_stack[8192] = {0}, tape[32768] = {0}, variables[26] = {0};
 	CallStack call_stack[512] = {0}; Loop loop_stack[64] = {0}; Function functions[1000] = {0};
+	WINDOW* ncwin = NULL;
 
 	populate_program_layout(&ip, functions, program);
 
@@ -283,6 +285,42 @@ void run_tsl_code(char* program) {
 				}
 			}
 			break;
+		case 'T': switch (program[++ip]) {
+			case 'i':
+				initscr(), cbreak(), noecho();
+				curs_set(0), keypad(stdscr, TRUE);
+				ncwin = newwin(27, 82, 0, 0);
+			case 'r':
+				box(ncwin, 0, 0);
+				mvwprintw(ncwin, 0, 6, " TSL Terminal Window");
+				for (int i = 0; i < 2000; i++) {
+					unsigned char ch = tape[14000 + i] & 0xFF;
+					if (ch == 0) ch = 32;
+					if (ch < 32 || ch > 126) continue;
+					mvwaddch(ncwin, (i / 80) + 1, (i % 80) + 1, ch);
+				}
+				wrefresh(ncwin);
+				break;
+			case 'w':
+				memset(&tape[14000], 0, sizeof(tape[0]) * 2000);
+				break;
+			case 'f':
+				delwin(ncwin), endwin();
+				break;
+			case 'c': tape[tp] = wgetch(ncwin); break;
+			case 'C': {
+				nodelay(ncwin, TRUE);
+				int ch = wgetch(ncwin);
+				nodelay(ncwin, FALSE);
+				if (ch != ERR) {
+					ungetch(ch);
+					tape[tp] = 1;
+				} else {
+					tape[tp] = 0;
+				}
+				break;
+			}
+		}
 	}
 }
 

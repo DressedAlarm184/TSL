@@ -10,7 +10,8 @@ SIMPLE_OPS = {
 	"stksub": ";-", "stkmul": ";*", "stkdiv": ";/", "putchar": "P", "printn": "N", "getchar": "#",
 	"readline": "G", "sleep": "K", "rand": "?", "entry": "S", "return": "Q", "while": "w(",
 	"forever": "f(", "if": "i(", "else": "|", "endblock": ")", "break": "E", "end": "%",
-	"parseint": "I", "storet": ":S", "loadt": ":L",
+	"parseint": "I", "storet": ":S", "loadt": ":L", "ncinitwin": "Ti", "ncendwin": "Tf",
+	"ncrefresh": "Tr", "ncclear": "Tw", "ncgetchar": "Tc", "ncischar": "TC"
 }
 
 IMMEDIATE_PREFIXS = {

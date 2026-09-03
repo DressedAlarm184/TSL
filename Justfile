@@ -6,7 +6,7 @@ build targets="library main":
 		if [ "$target" = "main" ]; then
 			cc -o output/tsl source/main.c -Loutput -lTSL -Wl,-rpath,'$ORIGIN'
 		elif [ "$target" = "library" ]; then
-			cc -o output/libTSL.so -fPIC -shared source/interpreter.c
+			cc -o output/libTSL.so -fPIC -shared source/interpreter.c -lncurses
 		elif [ "$target" = "shell" ]; then
 			cc -o output/tslsh source/shell.c -Loutput -lTSL -Wl,-rpath,'$ORIGIN' -lreadline
 		else

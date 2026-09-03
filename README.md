@@ -6,8 +6,8 @@ TSL (TapeStack Language) is an esoteric interpreted programming language. It use
 
 - C compiler with C99 support
 - The Just command runner
-- Python 3.10 or later (compiler only)
-- GNU Readline (shell only)
+- Python 3.10 or later (for compiler)
+- GNU Readline and Ncurses
 
 ## Building & Using
 
