@@ -1,80 +1,20 @@
-#!/usr/bin/env python3
 import sys
 import re
 
 SIMPLE_OPS = {
-	"inc": "+",
-	"dec": "-",
-	"next": ">",
-	"prev": "<",
-	"lnot": "*",
-	"bnot": "~",
-
-	"popadd": ":+",
-	"popsub": ":-",
-	"popmul": ":*",
-	"popdiv": ":/",
-	"popmod": ":%",
-	"eq": ":=",
-	"gt": ":>",
-	"lt": ":<",
-	"band": ":&",
-	"bor": ":|",
-	"bxor": ":^",
-
-	"pusht": ":!",
-	"pop": ":$",
-	"swapt": ":X",
-	"pushtp": ":t",
-	"poptp": ":j",
-	"pushvar": ":V",
-	"popvar": ":v",
-
-	"dup": ":D",
-	"drop": ":_",
-	"swap": ":x",
-	"over": ":O",
-	"rot": ":R",
-	"roll": ":r",
-	"pick": ":P",
-
-	"stkadd": ";+",
-	"stksub": ";-",
-	"stkmul": ";*",
-	"stkdiv": ";/",
-
-	"putchar": "P",
-	"printn": "N",
-	"getchar": "#",
-	"readline": "G",
-	"sleep": "K",
-	"rand": "?",
-
-	"entry": "S",
-	"return": "Q",
-	"while": "w(",
-	"forever": "f(",
-	"if": "i(",
-	"else": "|",
-	"endblock": ")",
-	"break": "E",
-	"end": "%",
-	"parseint": "I"
+	"inc": "+", "dec": "-", "next": ">", "prev": "<", "lnot": "*", "bnot": "~", "popadd": ":+",
+	"popsub": ":-", "popmul": ":*", "popdiv": ":/", "popmod": ":%", "eq": ":=", "gt": ":>",
+	"lt": ":<", "band": ":&", "bor": ":|", "bxor": ":^", "pusht": ":!", "pop": ":$", "swapt": ":X",
+	"pushtp": ":t", "poptp": ":j", "pushvar": ":V", "popvar": ":v", "dup": ":D", "drop": ":_",
+	"swap": ":x", "over": ":O", "rot": ":R", "roll": ":r", "pick": ":P", "stkadd": ";+",
+	"stksub": ";-", "stkmul": ";*", "stkdiv": ";/", "putchar": "P", "printn": "N", "getchar": "#",
+	"readline": "G", "sleep": "K", "rand": "?", "entry": "S", "return": "Q", "while": "w(",
+	"forever": "f(", "if": "i(", "else": "|", "endblock": ")", "break": "E", "end": "%", "parseint": "I"
 }
 
 IMMEDIATE_PREFIXS = {
-	"addi": "+",
-	"subi": "-",
-	"muli": "*",
-	"divi": "/",
-	"pushi": "i",
-	"addstki": "a",
-	"substki": "s",
-	"mulstki": "m",
-	"divstki": "d",
-	"setaddr": "p",
-	"right": ">",
-	"left": "<",
+	"addi": "+", "subi": "-", "muli": "*", "divi": "/", "pushi": "i", "addstki": "a",
+	"substki": "s", "mulstki": "m", "divstki": "d", "setaddr": "p", "right": ">", "left": "<",
 }
 
 global_function_names = {}
@@ -86,19 +26,19 @@ def transpile_tsl(source: str, file: str) -> str:
 
 	def functions():
 		return global_function_names | local_function_names
-	
+
 	for line_num, raw_line in enumerate(source.splitlines(), start=1):
 		line = re.sub(r'(#|//).*$', '', raw_line).strip()
 		if not line:
 			continue
-			
+
 		statements = re.split(r",\s*(?=(?:[^'\"]*['\"][^'\"]*['\"])*[^'\"]*$)", line)
-		
+
 		for stmt in statements:
 			stmt = stmt.strip()
 			if not stmt:
 				continue
-				
+
 			match = re.match(r"^(printf|write)\s+'(.*)'$", stmt, re.IGNORECASE)
 			if match:
 				cmd, content = match.group(1).lower(), match.group(2)
@@ -109,15 +49,19 @@ def transpile_tsl(source: str, file: str) -> str:
 				cmd_name = "printf" if stmt.lower().startswith("printf") else "write"
 				sys.stderr.write(f"Syntax Error ({file}, line {line_num}): Invalid {cmd_name} syntax in '{stmt}'. Expected: {cmd_name} 'string'\n")
 				sys.exit(1)
-				
+
 			tokens = stmt.split()
 			cmd = tokens[0].lower()
 			args = tokens[1:]
-			
+
 			if cmd in SIMPLE_OPS:
 				output.append(SIMPLE_OPS[cmd])
 				continue
-				
+
+			if cmd in IMMEDIATE_PREFIXS:
+				output.append(f"[{IMMEDIATE_PREFIXS[cmd]}{args[0]}]")
+				continue
+
 			try:
 				match cmd:
 					case "include":
@@ -153,8 +97,6 @@ def transpile_tsl(source: str, file: str) -> str:
 						output.append(f".{args[0].upper()}")
 					case "load":
 						output.append(f",{args[0].upper()}")
-					case op if op in IMMEDIATE_PREFIXS:
-						output.append(f"[{IMMEDIATE_PREFIXS[op]}{args[0]}]")
 					case _:
 						if allow_implicit_calls:
 							try:
@@ -172,7 +114,7 @@ def transpile_tsl(source: str, file: str) -> str:
 			except (ValueError, KeyError, AttributeError):
 				sys.stderr.write(f"Syntax Error ({file}, line {line_num}): Invalid argument in '{stmt}'\n")
 				sys.exit(1)
-					
+
 	return "".join(output)
 
 def main():
@@ -182,7 +124,7 @@ def main():
 
 	source = sys.argv[1]
 	output = sys.argv[2]
-	
+
 	try:
 		with open(source, "r", encoding="utf-8") as f:
 			source_content = f.read()
@@ -194,7 +136,7 @@ def main():
 		sys.exit(1)
 
 	compiled = transpile_tsl(source_content, source.rsplit("/", 1)[-1])
-	
+
 	try:
 		with open(output, "w", encoding="utf-8") as f:
 			f.write(compiled)
