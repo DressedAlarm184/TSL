@@ -99,6 +99,8 @@ void run_tsl_code(char* program) {
 					variables[var_index] = user_stack[sp--];
 					break;
 				}
+				case 'S': tape[user_stack[sp - 1]] = user_stack[sp]; sp -= 2; break;
+				case 'L': user_stack[sp] = tape[user_stack[sp]]; break;
 			}
 			break;
 		}

@@ -9,7 +9,8 @@ SIMPLE_OPS = {
 	"swap": ":x", "over": ":O", "rot": ":R", "roll": ":r", "pick": ":P", "stkadd": ";+",
 	"stksub": ";-", "stkmul": ";*", "stkdiv": ";/", "putchar": "P", "printn": "N", "getchar": "#",
 	"readline": "G", "sleep": "K", "rand": "?", "entry": "S", "return": "Q", "while": "w(",
-	"forever": "f(", "if": "i(", "else": "|", "endblock": ")", "break": "E", "end": "%", "parseint": "I"
+	"forever": "f(", "if": "i(", "else": "|", "endblock": ")", "break": "E", "end": "%",
+	"parseint": "I", "storet": ":S", "loadt": ":L",
 }
 
 IMMEDIATE_PREFIXS = {
@@ -93,9 +94,9 @@ def transpile_tsl(source: str, file: str) -> str:
 							output.append(f"F{func_idx:03d}")
 					case "set":
 						output.append(f"[{args[0]}]")
-					case "store":
+					case "storev":
 						output.append(f".{args[0].upper()}")
-					case "load":
+					case "loadv":
 						output.append(f",{args[0].upper()}")
 					case _:
 						if allow_implicit_calls:
