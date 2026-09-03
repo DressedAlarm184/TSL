@@ -39,83 +39,75 @@ void run_tsl_code(char* program) {
 		case '<': tp--; break;
 		case 'P': putchar(tape[tp]); fflush(stdout); break;
 		case 'N': printf("%d", tape[tp]); fflush(stdout); break;
-		case ':': {
-			char sub_op = program[++ip];
-			switch (sub_op) {
-				case '+': tape[tp] += user_stack[sp--]; break;
-				case '-': tape[tp] -= user_stack[sp--]; break;
-				case '*': tape[tp] *= user_stack[sp--]; break;
-				case '/': tape[tp] /= user_stack[sp--]; break;
-				case '%': tape[tp] %= user_stack[sp--]; break;
-				case '=': tape[tp] = (user_stack[sp--] == tape[tp]) ? 1 : 0; break;
-				case '>': tape[tp] = (user_stack[sp--] > tape[tp]) ? 1 : 0; break;
-				case '<': tape[tp] = (user_stack[sp--] < tape[tp]) ? 1 : 0; break;
-				case '!': user_stack[++sp] = tape[tp]; break;
-				case '$': tape[tp] = user_stack[sp--]; break;
-				case '&': tape[tp] &= user_stack[sp--]; break;
-				case '|': tape[tp] |= user_stack[sp--]; break;
-				case '^': tape[tp] ^= user_stack[sp--]; break;
-				case 'X': {
-					uint16_t temp = user_stack[sp];
-					user_stack[sp] = tape[tp];
-					tape[tp] = temp;
-					break;
-				}
-				case 'x': {
-					uint16_t temp = user_stack[sp];
-					user_stack[sp] = user_stack[sp - 1];
-					user_stack[sp - 1] = temp;
-					break;
-				}
-				case 'O':
-					user_stack[sp + 1] = user_stack[sp - 1]; sp++; break;
-				case 'R': {
-					uint16_t temp = user_stack[sp - 2];
-					user_stack[sp - 2] = user_stack[sp - 1];
-					user_stack[sp - 1] = user_stack[sp];
-					user_stack[sp] = temp;
-					break;
-				}
-				case 'r': {
-					int n = user_stack[sp--];
-					uint16_t item = user_stack[sp - n];
-					for (int i = sp - n; i < sp; i++) {
-						user_stack[i] = user_stack[i + 1];
-					}
-					user_stack[sp] = item;
-					break;
-				}
-				case 'P': {
-					int n = user_stack[sp--];
-					uint16_t item = user_stack[sp - n];
-					user_stack[++sp] = item;
-					break;
-				}
-				case 't': user_stack[++sp] = (uint16_t)tp; break;
-				case 'j': tp = user_stack[sp--]; break;
-				case 'D': case 'd': user_stack[sp + 1] = user_stack[sp]; sp++; break;
-				case '_': if (sp > 0) sp--; break;
-				case 'V': user_stack[sp] = variables[user_stack[sp]]; break;
-				case 'v': {
-					int var_index = user_stack[sp--];
-					variables[var_index] = user_stack[sp--];
-					break;
-				}
-				case 'S': tape[user_stack[sp - 1]] = user_stack[sp]; sp -= 2; break;
-				case 'L': user_stack[sp] = tape[user_stack[sp]]; break;
+		case ':': switch (program[++ip]) {
+			case '+': tape[tp] += user_stack[sp--]; break;
+			case '-': tape[tp] -= user_stack[sp--]; break;
+			case '*': tape[tp] *= user_stack[sp--]; break;
+			case '/': tape[tp] /= user_stack[sp--]; break;
+			case '%': tape[tp] %= user_stack[sp--]; break;
+			case '=': tape[tp] = (user_stack[sp--] == tape[tp]) ? 1 : 0; break;
+			case '>': tape[tp] = (user_stack[sp--] > tape[tp]) ? 1 : 0; break;
+			case '<': tape[tp] = (user_stack[sp--] < tape[tp]) ? 1 : 0; break;
+			case '!': user_stack[++sp] = tape[tp]; break;
+			case '$': tape[tp] = user_stack[sp--]; break;
+			case '&': tape[tp] &= user_stack[sp--]; break;
+			case '|': tape[tp] |= user_stack[sp--]; break;
+			case '^': tape[tp] ^= user_stack[sp--]; break;
+			case 'X': {
+				uint16_t temp = user_stack[sp];
+				user_stack[sp] = tape[tp];
+				tape[tp] = temp;
+				break;
 			}
-			break;
-		}
-		case ';': {
-			char sub_op = program[++ip];
-			switch (sub_op) {
-				case '+': user_stack[sp - 1] += user_stack[sp]; sp--; break;
-				case '-': user_stack[sp - 1] -= user_stack[sp]; sp--; break;
-				case '*': user_stack[sp - 1] *= user_stack[sp]; sp--; break;
-				case '/': user_stack[sp - 1] /= user_stack[sp]; sp--; break;
+			case 'x': {
+				uint16_t temp = user_stack[sp];
+				user_stack[sp] = user_stack[sp - 1];
+				user_stack[sp - 1] = temp;
+				break;
 			}
-			break;
-		}
+			case 'O':
+				user_stack[sp + 1] = user_stack[sp - 1]; sp++; break;
+			case 'R': {
+				uint16_t temp = user_stack[sp - 2];
+				user_stack[sp - 2] = user_stack[sp - 1];
+				user_stack[sp - 1] = user_stack[sp];
+				user_stack[sp] = temp;
+				break;
+			}
+			case 'r': {
+				int n = user_stack[sp--];
+				uint16_t item = user_stack[sp - n];
+				for (int i = sp - n; i < sp; i++) {
+					user_stack[i] = user_stack[i + 1];
+				}
+				user_stack[sp] = item;
+				break;
+			}
+			case 'P': {
+				int n = user_stack[sp--];
+				uint16_t item = user_stack[sp - n];
+				user_stack[++sp] = item;
+				break;
+			}
+			case 't': user_stack[++sp] = (uint16_t)tp; break;
+			case 'j': tp = user_stack[sp--]; break;
+			case 'D': case 'd': user_stack[sp + 1] = user_stack[sp]; sp++; break;
+			case '_': if (sp > 0) sp--; break;
+			case 'V': user_stack[sp] = variables[user_stack[sp]]; break;
+			case 'v': {
+				int var_index = user_stack[sp--];
+				variables[var_index] = user_stack[sp--];
+				break;
+			}
+			case 'S': tape[user_stack[sp - 1]] = user_stack[sp]; sp -= 2; break;
+			case 'L': user_stack[sp] = tape[user_stack[sp]]; break;
+		} break;
+		case ';': switch (program[++ip]) {
+			case '+': user_stack[sp - 1] += user_stack[sp]; sp--; break;
+			case '-': user_stack[sp - 1] -= user_stack[sp]; sp--; break;
+			case '*': user_stack[sp - 1] *= user_stack[sp]; sp--; break;
+			case '/': user_stack[sp - 1] /= user_stack[sp]; sp--; break;
+		} break;
 		case '#': {
 			struct termios old, new;
 			tcgetattr(STDIN_FILENO, &old);
@@ -320,7 +312,7 @@ void run_tsl_code(char* program) {
 				}
 				break;
 			}
-		}
+		} break;
 	}
 }
 
