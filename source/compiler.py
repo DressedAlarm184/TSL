@@ -8,14 +8,14 @@ SIMPLE_OPS = {
 	"pushtp": ":t", "poptp": ":j", "pushvar": ":V", "popvar": ":v", "dup": ":D", "drop": ":_",
 	"swap": ":x", "over": ":O", "rot": ":R", "roll": ":r", "pick": ":P", "stkadd": ";+",
 	"stksub": ";-", "stkmul": ";*", "stkdiv": ";/", "putchar": "P", "printn": "N", "getchar": "#",
-	"readline": "G", "sleep": "K", "rand": "?", "entry": "S", "return": "Q", "while": "w(",
-	"forever": "f(", "if": "i(", "else": "|", "endblock": ")", "break": "E", "end": "%",
-	"parseint": "I", "storet": ":S", "loadt": ":L", "ncinitwin": "Ti", "ncendwin": "Tf",
-	"ncrefresh": "Tr", "ncclear": "Tw", "ncgetchar": "Tc", "ncischar": "TC"
+	"readline": "G", "rand": "?", "entry": "S", "return": "Q", "while": "w(", "forever": "f(",
+	"if": "i(", "else": "|", "endblock": ")", "break": "E", "end": "%", "parseint": "I",
+	"storet": ":S", "loadt": ":L", "ncinitwin": "Ti", "ncendwin": "Tf", "ncrefresh": "Tr",
+	"ncclear": "Tw", "ncgetchar": "Tc", "ncischar": "TC"
 }
 
 IMMEDIATE_PREFIXS = {
-	"addi": "+", "subi": "-", "muli": "*", "divi": "/", "pushi": "i", "addstki": "a",
+	"addi": "+", "subi": "-", "muli": "*", "divi": "/", "pushi": "i", "addstki": "a", "sleep": "S",
 	"substki": "s", "mulstki": "m", "divstki": "d", "setaddr": "p", "right": ">", "left": "<",
 }
 

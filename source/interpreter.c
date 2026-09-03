@@ -140,6 +140,7 @@ void run_tsl_code(char* program) {
 				case 's': user_stack[sp] -= val; break;
 				case 'm': user_stack[sp] *= val; break;
 				case 'd': user_stack[sp] /= val; break;
+				case 'S': sleep(val); break;
 			}
 			break;
 		}
@@ -173,7 +174,6 @@ void run_tsl_code(char* program) {
 				}
 			}
 			break;
-		case 'K': usleep(tape[tp] * 1000); break;
 		case '*': tape[tp] = !tape[tp]; break;
 		case '~': tape[tp] = ~tape[tp]; break;
 		case '\'':
