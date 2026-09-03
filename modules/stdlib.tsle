@@ -9,6 +9,7 @@ export pushallvars 998 1
 export popallvars 997 2
 export stripnewline 996 0
 export forloop 995 4
+export nccalcaddr 994 0
 
 
 function strlen
@@ -69,4 +70,11 @@ function forloop
 		call indirect
 		next, inc, prev
 	endblock
+	return
+
+
+function nccalcaddr
+	mulstki 80
+	stkadd
+	addstki 14000
 	return

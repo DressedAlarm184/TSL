@@ -156,13 +156,12 @@ void run_tsl_code(char* program) {
 			break;
 		}
 		case '"': {
-			int start_tp = tp;
+			int target = user_stack[sp--];
 			ip++;
-			for (; program[ip] != '"'; ip++, tp++) {
-				tape[tp] = program[ip];
+			for (; program[ip] != '"'; ip++, target++) {
+				tape[target] = program[ip];
 			}
-			tape[tp] = 0;
-			tp = start_tp;
+			tape[target] = 0;
 			break;
 		}
 		case ')':
@@ -284,7 +283,7 @@ void run_tsl_code(char* program) {
 				ncwin = newwin(27, 82, 0, 0);
 			case 'r':
 				box(ncwin, 0, 0);
-				mvwprintw(ncwin, 0, 6, " TSL Terminal Window");
+				mvwprintw(ncwin, 0, 6, " TSL Terminal Window ");
 				for (int i = 0; i < 2000; i++) {
 					unsigned char ch = tape[14000 + i] & 0xFF;
 					if (ch == 0) ch = 32;
