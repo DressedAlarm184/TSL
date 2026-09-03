@@ -25,10 +25,10 @@ int scan_block(char* program, int ip, char open, char close, char alt, int* foun
 void populate_program_layout(int* ip, Function* functions, char* program);
 
 void run_tsl_code(char* program) {
-	int ip = 0, tp = 0, sp = 0, lp = 0, cp = 0;
+	int ip = 0, tp = 0, sp = 0, lp = 0, cp = 0, ap = 0;
 	uint16_t user_stack[8192] = {0}, tape[32768] = {0}, variables[26] = {0};
 	CallStack call_stack[512] = {0}; Loop loop_stack[64] = {0}; Function functions[1000] = {0};
-	WINDOW* ncwin = NULL;
+	WINDOW* ncwin = NULL; uint16_t aux_stack[128] = {0};
 
 	populate_program_layout(&ip, functions, program);
 
@@ -107,6 +107,8 @@ void run_tsl_code(char* program) {
 			case '-': user_stack[sp - 1] -= user_stack[sp]; sp--; break;
 			case '*': user_stack[sp - 1] *= user_stack[sp]; sp--; break;
 			case '/': user_stack[sp - 1] /= user_stack[sp]; sp--; break;
+			case '>': aux_stack[++ap] = user_stack[sp--]; break;
+			case '<': user_stack[++sp] = aux_stack[ap--]; break;
 		} break;
 		case '#': {
 			struct termios old, new;

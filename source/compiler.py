@@ -11,7 +11,7 @@ SIMPLE_OPS = {
 	"readline": "G", "rand": "?", "entry": "S", "return": "Q", "while": "w(", "forever": "f(",
 	"if": "i(", "else": "|", "endblock": ")", "break": "E", "end": "%", "parseint": "I",
 	"storet": ":S", "loadt": ":L", "ncinitwin": "Ti", "ncendwin": "Tf", "ncrefresh": "Tr",
-	"ncclear": "Tw", "ncgetchar": "Tc", "ncischar": "TC"
+	"ncclear": "Tw", "ncgetchar": "Tc", "ncischar": "TC", "txaux": ";>", "rxaux": ";<"
 }
 
 IMMEDIATE_PREFIXS = {
