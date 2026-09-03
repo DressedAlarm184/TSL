@@ -22,7 +22,7 @@ typedef struct {
 } CallStack;
 
 int scan_block(char* program, int ip, char open, char close, char alt, int* found_alt);
-void populate_program_layout(int* ip, Function* functions, char* program);
+void populate_function_list(char* program, Function* functions);
 
 void run_tsl_code(char* program) {
 	int ip = 0, tp = 0, sp = 0, lp = 0, cp = 0, ap = 0;
@@ -30,7 +30,7 @@ void run_tsl_code(char* program) {
 	CallStack call_stack[512] = {0}; Loop loop_stack[64] = {0}; Function functions[1000] = {0};
 	WINDOW* ncwin = NULL; uint16_t aux_stack[128] = {0};
 
-	populate_program_layout(&ip, functions, program);
+	populate_function_list(program, functions);
 
 	for (; program[ip] != '%' && program[ip] != 0; ip++) switch (program[ip]) {
 		case '+': tape[tp]++; break;
@@ -345,7 +345,7 @@ int scan_block(char* program, int ip, char open, char close, char alt, int* foun
 	return ip;
 }
 
-void populate_program_layout(int* ip, Function* functions, char* program) {
+void populate_function_list(char* program, Function* functions) {
 	char in_string = 0;
 
 	for (int i = 0; program[i] != 0; i++) {
@@ -359,8 +359,6 @@ void populate_program_layout(int* ip, Function* functions, char* program) {
 				i = scan_block(program, start_ip, '(', ')', 0, NULL);
 				sscanf(&program[start_ip], "(%d,%d)", &index, &requested);
 				functions[index] = (Function){.entry = i + 1, .tape_space = requested};
-			} else if (ch == 'S' && *ip == 0) {
-				*ip = i + 1;
 			}
 		} else {
 			if (ch == in_string) in_string = 0;

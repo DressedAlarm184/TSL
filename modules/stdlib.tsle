@@ -1,6 +1,5 @@
 allowimplicitcalls 1
 
-entry
 call main
 end
 
